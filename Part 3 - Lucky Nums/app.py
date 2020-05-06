@@ -23,20 +23,40 @@ def homepage():
 def post_api():
     """Post to API"""
 
-    # Take data from form to make new_user
-    new_user = User(
-        name=request.json["name"],
-        email=request.json["email"],
-        year=request.json["year"],
-        color=request.json["color"]
-    )
+    name = request.json["name"]
+    email = request.json["email"]
+    year = request.json["year"]
+    color = request.json["color"]
 
-    # Add new_user to db
-    db.add(new_user)
-    db.commit()
+    # check for valid inputs and return errors in JSON
+    if name == "" or color not in ["red", "green", "orange", "blue"]:
+        errors = []
+        if name == "":
+            name = {"name": "This field is required"}
+            errors.append(name)
 
-    # Return new_user as json with status code
-    new_user_serialized = new_user.serialize()
-    resp_json = jsonify(user=new_user_serialized)
+        if color not in ["red", "green", "orange", "blue"]:
+            color = {
+                "color": "Invalid color, must be one of: red, green, orange, blue"}
+            errors.append(color)
 
-    return (resp_json, 201)
+        return (jsonify(errors=errors), 201)
+
+    else:
+        # Take data from form to make new_user
+        new_user = User(
+            name=name,
+            email=email,
+            year=year,
+            color=color
+        )
+
+        # Add new_user to db
+        db.session.add(new_user)
+        db.session.commit()
+
+        # Return new_user as json with status code
+        new_user_serialized = new_user.serialize()
+        resp_json = jsonify(user=new_user_serialized)
+
+        return (resp_json, 201)
