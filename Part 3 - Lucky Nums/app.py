@@ -1,15 +1,11 @@
-from flask import Flask, request, redirect, jsonify, render_template
-from models import db, connect_db, User
+from flask import Flask, request, jsonify, render_template
+import requests
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///lucky-nums-db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = "oh-so-secret"
 
-connect_db(app)
-# Build columns
-db.create_all()
+BASE_URL = "http://numbersapi.com"
 
 
 @app.route("/")
@@ -43,20 +39,23 @@ def post_api():
         return (jsonify(errors=errors), 201)
 
     else:
-        # Take data from form to make new_user
-        new_user = User(
-            name=name,
-            email=email,
-            year=year,
-            color=color
-        )
 
-        # Add new_user to db
-        db.session.add(new_user)
-        db.session.commit()
+        random_num_resp = requests.get(url=f"{BASE_URL}/random?json")
+        year_resp = requests.get(url=f"{BASE_URL}/{year}?json")
 
-        # Return new_user as json with status code
-        new_user_serialized = new_user.serialize()
-        resp_json = jsonify(user=new_user_serialized)
+        num_json = random_num_resp.json()
+        year_json = year_resp.json()
+
+        # JSON response
+        resp_json = {
+            "num": {
+                "fact": num_json["text"],
+                "num": num_json["number"]
+            },
+            "year": {
+                "fact": year_json["text"],
+                "year": year_json["number"]
+            }
+        }
 
         return (resp_json, 201)
