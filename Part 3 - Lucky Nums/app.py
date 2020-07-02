@@ -15,6 +15,7 @@ def homepage():
     return render_template("index.html")
 
 
+""""Get number data from API """
 @app.route("/api/get-lucky-num", methods=["POST"])
 def post_api():
     """Post to API"""
@@ -25,17 +26,20 @@ def post_api():
     color = request.json["color"]
 
     # check for valid inputs and return errors in JSON
-    if name == "" or color not in ["red", "green", "orange", "blue"]:
+    if name == "" or name.isspace() or color not in ["red", "green", "orange", "blue"] or year == "" or year.isspace():
         errors = []
-        if name == "":
-            name = {"name": "This field is required"}
+        if name == "" or name.isspace():
+            name = {"name": "Name is required"}
             errors.append(name)
+
+        if year == "" or year.isspace():
+            year = {"year": "Year is required"}
+            errors.append(year)
 
         if color not in ["red", "green", "orange", "blue"]:
             color = {
                 "color": "Invalid color, must be one of: red, green, orange, blue"}
             errors.append(color)
-
         return (jsonify(errors=errors), 201)
 
     else:
@@ -57,5 +61,4 @@ def post_api():
                 "year": year_json["number"]
             }
         }
-
         return (resp_json, 201)

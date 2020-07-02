@@ -26,11 +26,23 @@ async function processForm(evt) {
 
 function handleResponse(resp) {
     const results = document.getElementById("lucky-results");
+    let html='';
 
-    let html = `
-    <p>Your lucky number is ${resp.num.num} (${resp.num.fact}).</p>
-    <p>Your birth year (${resp.year.year}) fact is ${resp.year.fact}.</p>
-    `;
+    /** check response for errors displays them*/
+    if(resp.errors){
+
+        for(let i of resp.errors){
+            html += `<b>${Object.values(i)}</b><br>`;
+        }
+    }
+
+    /** if no errors, display response */
+    else{
+        html += `
+            <p>Your lucky number is ${resp.num.num} (${resp.num.fact}).</p>
+            <p>Your birth year (${resp.year.year}) fact is ${resp.year.fact}.</p>
+        `;
+    }
 
     results.innerHTML = html;
 }
